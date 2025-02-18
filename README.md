@@ -63,38 +63,88 @@
     "user.user_name": 1,
     "user.followers_count": 1,
     "user.statuses_count": 1,
-    "_id": 0
   }
   ).sort({ "user.followers_count": 1 })
     ```
 
 * (Q6) How many records does your query return?
-
+- 16 records are returned by my query.
 * (Q7) What is the command that retrieves the results without the _id field?
 
     ```javascript
-    // Replace here
+    db.tweets.find(
+  {
+    "place.country_code": "JP",
+    "user.statuses_count": { $gt: 50000 }
+  },
+  {
+    "user.user_name": 1,
+    "user.followers_count": 1,
+    "user.statuses_count": 1,
+    "_id": 0
+  }
+  ).sort({ "user.followers_count": 1 })
+
     ```
 
 * (Q8) What is the command to insert the sample document? What is the result of running the command?
 
     ```javascript
-    // Replace here
-    ```
+    db.tweets.insertOne({
+  id: NumberLong("921633456941125634"),
+  place: { 
+    country_code: "JP", 
+    name: "Japan", 
+    place_type: "city" 
+  },
+  user: {
+    user_name: "xyz2",
+    followers_count: [2100, 5000],  // Array of follower counts
+    statuses_count: 55000
+  },
+  hashtags: ["nature"],
+  lang: "ja"
+  })
 
+    
+    ```
+This is the result of running the command:
+```
+{
+  acknowledged: true,
+  insertedId: ObjectId('67b3def8dab253a501e43269')
+}
+```
 
 * (Q9) Does MongoDB accept this document while the followers_count field has a different type than other records?
-
+- Yes, MongoDB accepts this document even though the followers_count has a different type than other recoirds.
 * (Q10) What is your command to insert this record?
 
     ```javascript
-    // Replace here
+    db.tweets.insertOne({
+  id: NumberLong("921633456941121354"),
+  place: { 
+    country_code: "JP", 
+    name: "Japan", 
+    place_type: "city" 
+  },
+  user: {
+    user_name: "xyz3",
+    followers_count: { 
+      last_month: 550, 
+      this_month: 2200 
+    },
+    statuses_count: 112000
+  },
+  hashtags: ["art", "tour"],
+  lang: "ja"
+  })
+
     ```
 
 
 * (Q11) Where did the two new records appear in the sort order?
-
-
+User name "xyz2" appears between followers_count {4578} and {6745}. User name "xyz3" is the first record that appears in the sort order..
 * (Q12) Why did they appear at these specific locations?
 
 
