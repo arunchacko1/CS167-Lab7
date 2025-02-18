@@ -47,7 +47,8 @@
 * (Q4) What is your command to count the total number of records in the `tweets` collection and what is the output of the command?
 
     ```javascript
-    // Replace here
+    db.tweets.countDocuments()
+    The output is 1000.
     ```
 
 * (Q5) What is your command for this query?
