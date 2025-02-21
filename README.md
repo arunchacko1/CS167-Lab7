@@ -241,4 +241,57 @@ This is the result of running the command:
 * (Q24) What's the running time of the second query? Comparing to Q23, it is faster or slower?
 * The running time of the second query is 163ms which, when compared to Q23, it is faster.
 
+* (Q25) What do winningPlan and COLLSCAN mean?
+- winningPlan is the plan that the query planner has selected as the most efficient for executing a given query. 
+- COLLSCAN stands for "Collection Scan." It indicates that MongoDB is scanning every document in the collection to satisfy the query, rather than using an index to find the relevant documents more efficiently.
+
+* (Q26) What is the winningPlan? Did your query use the text index?
+The winning Plan is:
+```
+"winningPlan": {
+      "isCached": false,
+      "stage": "TEXT_MATCH",
+      "indexPrefix": {},
+      "indexName": "text_text",
+      "parsedTextQuery": {
+        "terms": [
+          "happi"
+        ],
+        "negatedTerms": [],
+        "phrases": [],
+        "negatedPhrases": []
+      },
+      "textIndexVersion": 3,
+      "inputStage": {
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "_fts": "text",
+            "_ftsx": 1
+          },
+          "indexName": "text_text",
+          "isMultiKey": true,
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "backward",
+          "indexBounds": {}
+        }
+      }
+    }
+```
+
+My query did use the text index:
+```
+"stage": "TEXT_MATCH",
+```
+```
+"indexName": "text_text"
+```
+
+* (Q27) You may notice that the nReturned of your query does not match the regex query. Do some explornations and explain why.
+- The difference in the number of documents returned between the two queries is due to the differences in how MongoDB performs text search versus regex search. The text index allows for broader matching by handling things like stemming, case insensitivity, and tokenization, while the regex search is more literal and strict about matching the pattern.
+  
   
