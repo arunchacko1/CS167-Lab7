@@ -144,49 +144,101 @@ This is the result of running the command:
 
 
 * (Q11) Where did the two new records appear in the sort order?
-User name "xyz2" appears between followers_count {4578} and {6745}. User name "xyz3" is the first record that appears in the sort order..
+- User name "xyz2" appears between followers_count {4578} and {6745}. User name "xyz3" is the first record that appears in the sort order.
 * (Q12) Why did they appear at these specific locations?
-
+- According to the MongoDB documentation: "A descending sort compares the largest elements of the array according to the reverse BSON type sort order.' This is hy 'xyz2' appears where it does because the value {5000} is being used to compare with the follower counts.
+- When sorting with MongoDB, it uses the first field in nested objects for comparison. In this case, it's using the value 550. That is why 'xyz3' appears first in the sort order.
 
 * (Q13) Where did the two records appear in the ascending sort order? Explain your observation.
+- User name "xyz2" appears between followers_count {2049} and {2197}. User name "xyz3" is the last record that appears in the sort order.
+- According to the MongoDB documentation: "An ascending sort compares the smallest elements of the array according to the BSON type sort order.' This is why 'xyz2' appears where it does because the value {2100} is being used to compare with the follower counts. 
 
+
+- When sorting with MongoDB, it uses the first field in nested objects for comparison. In this case, it's using the value 550. That is why 'xyz3' appears last in the sort order, since we are using ascending order this time.
 
 * (Q14) Is MongoDB able to build the index on that field with the different value types stored in the `user.followers_count` field?
-
+- Yes, MongoDB was able to create the index, but with limitations. MongoDB will index only values it can sort properly. Documents with non-sortable types (objects, arrays) may be ignored or behave unexpectedly in queries.
 
 * (Q15) What is your command for building the index?
 
     ```javascript
-    // Replace here
+    db.tweets.createIndex({ "user.followers_count": 1 })
     ```
 
 * (Q16) What is the output of the create index command?
 
     ```text
+    "user.followers_count_1"
     ```
 
 * (Q17) What is your command for this query?
 
     ```javascript
-    // Replace here
+    db.tweets.find(
+  {
+    "hashtags": { $in: ["job", "hiring", "IT"] }
+  },
+  {
+    "text": 1,
+    "hashtags": 1,
+    "user.user_name": 1,
+    "user.followers_count": 1,
+    "_id": 0
+  }
+  ).sort({ "user.followers_count": 1 })
     ```
 
 * (Q18) How many records are returned from this query?
 
-    ```
-    // Replace here
-    ```
+   24 records were returned from this query/
 
 * (Q19) What is your command for this query?
     ```javascript
-    // Replace here
+    db.tweets.aggregate([
+  { $group: { _id: "$place.country_code", tweets_count: { $sum: 1 } } },
+  { $sort: { tweets_count: -1 } },
+  { $limit: 5 },
+  { $project: { country_code: "$_id", tweets_count: 1, _id: 0 } }
+])
+
     ```
 
 * (Q20) What is the output of the command?
-
+```
+[
+  { tweets_count: 153, country_code: 'US' },
+  { tweets_count: 107, country_code: 'JP' },
+  { tweets_count: 89, country_code: 'GB' },
+  { tweets_count: 65, country_code: 'TR' },
+  { tweets_count: 56, country_code: 'IN' }
+]
+```
 * (Q21) What is your command for this query?
     ```javascript
-    // Replace here
+    db.tweets.aggregate([
+  { $unwind: "$hashtags" },
+  { $group: { _id: "$hashtags", count: { $sum: 1 } } },
+  { $sort: { count: -1 } },
+  { $limit: 5 }
+])
+
     ```
 
 * (Q22) What is the output of the command?
+```
+[
+  { _id: 'ALDUBxEBLoveis', count: 56 },
+  { _id: 'FurkanPalalı', count: 31 },
+  { _id: 'no309', count: 31 },
+  { _id: 'LalOn', count: 31 },
+  { _id: 'job', count: 19 }
+]
+```
+
+* (Q23) Are there any existing indexes? Explain your answer.
+- Yes, there is an existing index. The default index is present but there are no additional custom indexes since none have been added.
+
+* (Q24) What's the running time of the second query? Comparing to Q23, it is faster or slower?
+* The running time of the second query is 163ms which, when compared to Q23, it is faster.
+
+  
